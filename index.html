@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>纯净 · 管理鱼缸</title>
+    <style>
+        /* ===== 极简重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 24px;
+        }
+
+        /* ===== 主容器 ===== */
+        .container {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        /* ===== 打字机标题（两行） ===== */
+        .title-wrapper {
+            width: 100%;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #typewriter {
+            font-size: clamp(36px, 8vw, 54px);
+            font-weight: 600;
+            color: #000000;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+            text-align: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 1.4em;
+            word-break: keep-all;
+        }
+
+        #typewriter .line {
+            display: block;
+        }
+
+        /* 打字光标 */
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 0.9em;
+            background: #000;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 0.9s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ===== 小鱼区域 ===== */
+        .fish-area {
+            width: 100%;
+            padding: 20px 0 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            /* 点击区域 */;
+        }
+
+        /* 外层包裹：负责旋转摆动 */
+        .fish-wrapper {
+            display: inline-block;
+            animation: swimSway 2.8s ease-in-out infinite;
+            will-change: transform;
+            transform-origin: center center;
+        }
+
+        /* 左右摆动 — 非常轻微的旋转 */
+        @keyframes swimSway {
+            0% {
+                transform: rotate(-3.5deg);
+            }
+            50% {
+                transform: rotate(3.5deg);
+            }
+            100% {
+                transform: rotate(-3.5deg);
+            }
+        }
+
+        /* 鱼本身：负责缩放反馈，不受旋转影响 */
+        .fish-emoji {
+            font-size: clamp(80px, 25vw, 140px);
+            line-height: 1;
+            display: block;
+            filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.03));
+            user-select: none;
+            transition: transform 0.15s ease;
+            will-change: transform;
+        }
+
+        /* 点击缩放由 JS 动态添加 style，这里不需要额外规则 */
+
+        /* ===== 爆炸效果（应用在 wrapper 上） ===== */
+        .fish-wrapper.explode {
+            animation: explodeAnim 0.6s ease forwards !important;
+        }
+
+        @keyframes explodeAnim {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            30% {
+                transform: scale(1.8) rotate(20deg);
+                opacity: 0.9;
+            }
+            60% {
+                transform: scale(2.4) rotate(-30deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(0.1) rotate(40deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== 下载按钮 ===== */
+        .download-section {
+            width: 100%;
+            margin-top: 32px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #000000;
+            color: #ffffff;
+            font-size: clamp(18px, 4vw, 22px);
+            font-weight: 500;
+            padding: 16px 48px;
+            border-radius: 60px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            letter-spacing: 0.3px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-decoration: none;
+            user-select: none;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .download-btn:hover {
+            background: #1a1a1a;
+            transform: scale(1.01);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+        }
+
+        .download-btn:active {
+            transform: scale(0.97);
+            background: #2a2a2a;
+        }
+
+        .download-btn .icon {
+            font-size: 1.2em;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .download-btn:hover .icon {
+            transform: translateY(1px);
+        }
+
+        /* ===== 脚标 ===== */
+        .footer-note {
+            margin-top: 24px;
+            font-size: 13px;
+            color: #aaaaaa;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+
+        .footer-note:hover {
+            color: #888888;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            .container {
+                padding: 28px 16px;
+            }
+
+            .download-btn {
+                padding: 14px 32px;
+                font-size: 17px;
+                max-width: 260px;
+            }
+
+            #typewriter {
+                font-size: clamp(30px, 7vw, 40px);
+            }
+
+            .fish-emoji {
+                font-size: 72px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            #typewriter {
+                font-size: 26px;
+            }
+
+            .fish-emoji {
+                font-size: 60px;
+            }
+
+            .download-btn {
+                padding: 12px 24px;
+                font-size: 15px;
+                max-width: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 打字机标题（两行） -->
+        <div class="title-wrapper">
+            <div id="typewriter"></div>
+        </div>
+
+        <!-- 可点击的小鱼 -->
+        <div class="fish-area" id="fishArea">
+            <span class="fish-wrapper" id="fishWrapper">
+                <span class="fish-emoji" id="fishEmoji">🐠</span>
+            </span>
+        </div>
+
+        <!-- 下载按钮 -->
+        <div class="download-section">
+            <button class="download-btn" id="downloadBtn">
+                <span class="icon">⬇</span>
+                下载软件
+                <span style="font-size:0.7em; opacity:0.6; font-weight:300;">·</span>
+                <span style="font-weight:300; font-size:0.8em; opacity:0.7;">蓝奏云</span>
+            </button>
+        </div>
+
+        <!-- 脚标 -->
+        <div class="footer-note">管理鱼缸 · 纯净版</div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // 1. 打字机效果 — 两行
+            // ============================================================
+            const lines = ['纯净的', '管理鱼缸软件'];
+            const typewriterEl = document.getElementById('typewriter');
+            let lineIndex = 0;
+            let charIndex = 0;
+
+            function typeStep() {
+                if (lineIndex < lines.length) {
+                    const currentLine = lines[lineIndex];
+                    if (charIndex < currentLine.length) {
+                        let displayHtml = '';
+                        for (let i = 0; i < lines.length; i++) {
+                            if (i < lineIndex) {
+                                displayHtml += `<span class="line">${lines[i]}</span>`;
+                            } else if (i === lineIndex) {
+                                const partial = currentLine.substring(0, charIndex + 1);
+                                displayHtml += `<span class="line">${partial}<span class="cursor"></span></span>`;
+                            } else {
+                                displayHtml += `<span class="line"></span>`;
+                            }
+                        }
+                        typewriterEl.innerHTML = displayHtml;
+                        charIndex++;
+                        const delay = 55 + Math.random() * 30;
+                        setTimeout(typeStep, delay);
+                    } else {
+                        lineIndex++;
+                        charIndex = 0;
+                        if (lineIndex < lines.length) {
+                            setTimeout(typeStep, 200);
+                        } else {
+                            let finalHtml = '';
+                            for (let i = 0; i < lines.length; i++) {
+                                finalHtml += `<span class="line">${lines[i]}</span>`;
+                            }
+                            typewriterEl.innerHTML = finalHtml + '<span class="cursor"></span>';
+                        }
+                    }
+                }
+            }
+
+            typewriterEl.innerHTML = '<span class="line"><span class="cursor"></span></span>';
+            setTimeout(typeStep, 300);
+
+            // ============================================================
+            // 2. 下载按钮 — 蓝奏云
+            // ============================================================
+            const LANZOU_URL = 'https://wwbbx.lanzouw.com/iclqQ42ewjjg';
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            downloadBtn.addEventListener('click', function(e) {
+                window.location.href = LANZOU_URL;
+            });
+
+            // ============================================================
+            // 3. 小鱼点击互动 — 逐渐愤怒 → 爆炸
+            // ============================================================
+            const fishEmoji = document.getElementById('fishEmoji');
+            const fishWrapper = document.getElementById('fishWrapper');
+            const fishArea = document.getElementById('fishArea');
+
+            const emotionStages = [
+                '🐠', // 0
+                '😤', // 1
+                '😤', // 2
+                '😡', // 3
+                '😡', // 4
+                '🤬', // 5
+                '🤬', // 6
+                '👿', // 7
+                '👿', // 8
+                '🔥', // 9
+                '💥' // 10
+            ];
+
+            let clickCount = 0;
+            let isExploded = false;
+
+            fishArea.addEventListener('click', function(e) {
+                if (isExploded) {
+                    resetFish();
+                    return;
+                }
+
+                clickCount++;
+                if (clickCount > 10) clickCount = 10;
+
+                // 更新表情
+                const newEmoji = emotionStages[clickCount] || '💥';
+                fishEmoji.textContent = newEmoji;
+
+                // 点击缩放反馈（不影响外层旋转）
+                fishEmoji.style.transform = 'scale(0.88)';
+                setTimeout(() => {
+                    fishEmoji.style.transform = 'scale(1)';
+                }, 150);
+
+                if (clickCount === 10) {
+                    explodeFish();
+                }
+            });
+
+            function explodeFish() {
+                isExploded = true;
+                // 暂停摆动动画，播放爆炸动画
+                fishWrapper.style.animation = 'none';
+                fishWrapper.classList.add('explode');
+                // 爆炸后重置
+                setTimeout(() => {
+                    resetFish();
+                }, 700);
+            }
+
+            function resetFish() {
+                clickCount = 0;
+                isExploded = false;
+                fishEmoji.textContent = '🐠';
+                fishEmoji.style.transform = 'scale(1)';
+                fishWrapper.classList.remove('explode');
+                // 重新应用摆动动画
+                fishWrapper.style.animation = '';
+                // 强制重绘以重启动画
+                void fishWrapper.offsetHeight;
+                fishWrapper.style.animation = 'swimSway 2.8s ease-in-out infinite';
+            }
+
+            fishArea.style.cursor = 'pointer';
+
+            console.log('🐠 点击小鱼十次会爆炸哦！');
+        })();
+    </script>
+
+</body>
+</html>
