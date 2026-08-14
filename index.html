@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🐟 水族世界 · 小鱼游</title>
+    <style>
+        /* ===== 全局重置 & 基础 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            cursor: pointer;
+        }
+
+        /* ===== 水族箱容器 ===== */
+        .aquarium {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background:
+                /* 光柱效果 — 从顶部射下的光束 */
+                radial-gradient(ellipse at 50% 0%, rgba(100, 200, 255, 0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 30% 0%, rgba(80, 180, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 0%, rgba(80, 180, 255, 0.15) 0%, transparent 40%),
+                /* 水下渐变 — 从浅蓝到深海蓝 */
+                linear-gradient(180deg,
+                    #0b2b4a 0%,
+                    #0f3a5e 15%,
+                    #154b72 35%,
+                    #1a5a82 55%,
+                    #1e6a8f 70%,
+                    #1f5070 85%,
+                    #0e2a40 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ===== 水底沙石装饰 ===== */
+        .seabed {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background:
+                radial-gradient(ellipse at 20% 100%, rgba(60, 90, 70, 0.3) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(50, 80, 60, 0.25) 0%, transparent 50%),
+                linear-gradient(0deg, rgba(30, 60, 50, 0.3) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .seabed::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background:
+                radial-gradient(circle at 10% 100%, rgba(70, 100, 80, 0.2) 0%, transparent 30%),
+                radial-gradient(circle at 30% 100%, rgba(60, 90, 70, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 55% 100%, rgba(80, 110, 90, 0.2) 0%, transparent 35%),
+                radial-gradient(circle at 80% 100%, rgba(50, 80, 60, 0.15) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        /* ===== 水草装饰 (纯CSS) ===== */
+        .seaweed {
+            position: absolute;
+            bottom: 10px;
+            width: 8px;
+            border-radius: 50% 50% 0 0;
+            transform-origin: bottom center;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .seaweed-1 {
+            left: 8%;
+            height: 70px;
+            background: linear-gradient(0deg, #1a4a2a, #2d7a4a, #3aaa6a);
+            animation: sway 4s ease-in-out infinite alternate;
+        }
+        .seaweed-2 {
+            left: 15%;
+            height: 55px;
+            background: linear-gradient(0deg, #1a4a2a, #2a6a3a, #3a9a5a);
+            animation: sway 5s ease-in-out infinite alternate-reverse;
+            width: 6px;
+        }
+        .seaweed-3 {
+            right: 12%;
+            height: 80px;
+            background: linear-gradient(0deg, #1a4a2a, #2d7a4a, #3aaa6a);
+            animation: sway 4.5s ease-in-out infinite alternate;
+        }
+        .seaweed-4 {
+            right: 22%;
+            height: 45px;
+            background: linear-gradient(0deg, #1a4a2a, #2a6a3a, #3a9a5a);
+            animation: sway 5.5s ease-in-out infinite alternate-reverse;
+            width: 5px;
+        }
+
+        @keyframes sway {
+            0% {
+                transform: rotate(-8deg);
+            }
+            100% {
+                transform: rotate(8deg);
+            }
+        }
+
+        /* ===== 光柱动态 ===== */
+        .light-ray {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(180, 230, 255, 0.08) 0%, transparent 80%);
+            pointer-events: none;
+            z-index: 0;
+            animation: rayMove 8s ease-in-out infinite alternate;
+        }
+        .light-ray:nth-child(1) {
+            left: 20%;
+            animation-delay: 0s;
+        }
+        .light-ray:nth-child(2) {
+            left: 45%;
+            animation-delay: 2s;
+            height: 80%;
+        }
+        .light-ray:nth-child(3) {
+            left: 70%;
+            animation-delay: 4s;
+            height: 90%;
+        }
+        .light-ray:nth-child(4) {
+            left: 88%;
+            animation-delay: 1s;
+            height: 70%;
+        }
+
+        @keyframes rayMove {
+            0% {
+                opacity: 0.3;
+                transform: scaleY(0.8);
+            }
+            100% {
+                opacity: 0.9;
+                transform: scaleY(1.2);
+            }
+        }
+
+        /* ===== 气泡 ===== */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), rgba(180, 230, 255, 0.1) 70%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            pointer-events: none;
+            z-index: 2;
+            animation: bubbleRise var(--duration, 6s) ease-in var(--delay, 0s) infinite;
+            box-shadow: inset 0 -4px 8px rgba(0, 40, 80, 0.2);
+            will-change: transform;
+        }
+        /* 气泡大小与速度由内联样式控制 */
+        .bubble::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 30%;
+            height: 25%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, transparent 100%);
+            border-radius: 50%;
+        }
+
+        @keyframes bubbleRise {
+            0% {
+                transform: translateY(0) translateX(0) scale(0.8);
+                opacity: 0.4;
+            }
+            15% {
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(-50vh) translateX(20px) scale(1.1);
+                opacity: 0.9;
+            }
+            85% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-110vh) translateX(-10px) scale(0.9);
+                opacity: 0;
+            }
+        }
+
+        /* ===== 小鱼容器 ===== */
+        .fish-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* ===== 小鱼主体 ===== */
+        .fish {
+            font-size: clamp(72px, 15vw, 120px);
+            line-height: 1;
+            filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.5)) drop-shadow(0 0 60px rgba(80, 180, 255, 0.2));
+            animation: floatFish 3.2s ease-in-out infinite;
+            transform-origin: center center;
+            will-change: transform;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* ===== 非线性游动 — 向前 → 向后 → 向前 → 向后 ===== */
+        .fish-wrapper {
+            animation: swimNonlinear 7.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            pointer-events: none;
+        }
+
+        @keyframes swimNonlinear {
+            0% {
+                transform: translateX(-220px) scaleX(1);
+            }
+            5% {
+                transform: translateX(-190px) scaleX(1);
+            }
+            20% {
+                transform: translateX(-60px) scaleX(1);
+            }
+            38% {
+                transform: translateX(80px) scaleX(1);
+            }
+            50% {
+                transform: translateX(200px) scaleX(1);
+            }
+            54% {
+                transform: translateX(220px) scaleX(-1);
+            }
+            60% {
+                transform: translateX(150px) scaleX(-1);
+            }
+            75% {
+                transform: translateX(20px) scaleX(-1);
+            }
+            88% {
+                transform: translateX(-120px) scaleX(-1);
+            }
+            96% {
+                transform: translateX(-200px) scaleX(-1);
+            }
+            100% {
+                transform: translateX(-220px) scaleX(1);
+            }
+        }
+
+        /* ===== 上下浮动 ===== */
+        @keyframes floatFish {
+            0% {
+                transform: translateY(0px);
+            }
+            25% {
+                transform: translateY(-18px);
+            }
+            50% {
+                transform: translateY(6px);
+            }
+            75% {
+                transform: translateY(-12px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* ===== 鱼周围的微光晕 ===== */
+        .fish-glow {
+            position: absolute;
+            width: 180%;
+            height: 180%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(80, 200, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            animation: glowPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 1;
+            }
+        }
+
+        /* ===== 提示文字 ===== */
+        .hint {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(180, 230, 255, 0.7);
+            font-size: clamp(14px, 2vw, 22px);
+            letter-spacing: 3px;
+            text-shadow: 0 0 30px rgba(80, 200, 255, 0.3);
+            background: rgba(10, 40, 70, 0.35);
+            padding: 10px 28px;
+            border-radius: 40px;
+            border: 1px solid rgba(180, 230, 255, 0.15);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 20;
+            pointer-events: none;
+            animation: hintPulse 2.8s ease-in-out infinite;
+            white-space: nowrap;
+            font-weight: 300;
+        }
+        .hint span {
+            display: inline-block;
+            animation: hintArrow 1.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes hintPulse {
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.04);
+            }
+        }
+        @keyframes hintArrow {
+            0% {
+                transform: translateX(-4px);
+            }
+            100% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* ===== 水面上方光晕 ===== */
+        .surface-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: radial-gradient(ellipse at 50% 0%, rgba(120, 220, 255, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: surfacePulse 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes surfacePulse {
+            0% {
+                opacity: 0.5;
+                transform: scaleY(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scaleY(1.2);
+            }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .fish {
+                font-size: clamp(56px, 18vw, 80px);
+            }
+            .fish-wrapper {
+                animation: swimNonlinearMobile 6.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            }
+            .hint {
+                padding: 8px 20px;
+                font-size: clamp(12px, 2.5vw, 16px);
+                bottom: 10%;
+            }
+            .seaweed-1,
+            .seaweed-3 {
+                height: 40px;
+            }
+            .seaweed-2,
+            .seaweed-4 {
+                height: 30px;
+            }
+            .seabed {
+                height: 30px;
+            }
+            .seabed::before {
+                height: 15px;
+            }
+            .bubble {
+                display: none;
+            }
+            .bubble:nth-child(-n+5) {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .fish {
+                font-size: 52px;
+            }
+            .fish-wrapper {
+                animation: swimNonlinearMobile 5.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            }
+            .hint {
+                font-size: 12px;
+                padding: 6px 14px;
+                bottom: 8%;
+                letter-spacing: 1px;
+            }
+            .bubble {
+                display: none;
+            }
+            .bubble:nth-child(-n+3) {
+                display: block;
+            }
+        }
+
+        /* 移动端专用的游动范围（缩小） */
+        @keyframes swimNonlinearMobile {
+            0% {
+                transform: translateX(-120px) scaleX(1);
+            }
+            5% {
+                transform: translateX(-100px) scaleX(1);
+            }
+            20% {
+                transform: translateX(-30px) scaleX(1);
+            }
+            38% {
+                transform: translateX(40px) scaleX(1);
+            }
+            50% {
+                transform: translateX(110px) scaleX(1);
+            }
+            54% {
+                transform: translateX(120px) scaleX(-1);
+            }
+            60% {
+                transform: translateX(80px) scaleX(-1);
+            }
+            75% {
+                transform: translateX(10px) scaleX(-1);
+            }
+            88% {
+                transform: translateX(-60px) scaleX(-1);
+            }
+            96% {
+                transform: translateX(-110px) scaleX(-1);
+            }
+            100% {
+                transform: translateX(-120px) scaleX(1);
+            }
+        }
+
+        /* ===== 点击波纹反馈 (纯视觉) ===== */
+        .click-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(180, 230, 255, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 999;
+            animation: rippleOut 0.8s ease-out forwards;
+        }
+
+        @keyframes rippleOut {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 水族箱 ===== -->
+    <div class="aquarium" id="aquarium">
+
+        <!-- 水面光晕 -->
+        <div class="surface-glow"></div>
+
+        <!-- 光柱 -->
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+
+        <!-- 水底 -->
+        <div class="seabed"></div>
+
+        <!-- 水草 -->
+        <div class="seaweed seaweed-1"></div>
+        <div class="seaweed seaweed-2"></div>
+        <div class="seaweed seaweed-3"></div>
+        <div class="seaweed seaweed-4"></div>
+
+        <!-- ===== 气泡 (由JS动态生成，这里放静态占位) ===== -->
+        <div id="bubble-container"></div>
+
+        <!-- ===== 小鱼 ===== -->
+        <div class="fish-wrapper" id="fishWrapper">
+            <div class="fish" id="fish">🐟</div>
+            <div class="fish-glow"></div>
+        </div>
+
+        <!-- ===== 提示文字 ===== -->
+        <div class="hint" id="hintText">
+            <span>🐠</span> 点击进入水族世界 <span>🐠</span>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // 1. 配置 — 你的蓝奏云链接
+            // ============================================================
+            const LANZOU_URL = 'https://wwbbx.lanzouw.com/iclqQ42ewjjg';
+
+            // ============================================================
+            // 2. 点击跳转
+            // ============================================================
+            const aquarium = document.getElementById('aquarium');
+
+            aquarium.addEventListener('click', function(e) {
+                // 创建点击波纹
+                const ripple = document.createElement('div');
+                ripple.className = 'click-ripple';
+                const size = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+                ripple.style.width = size + 'px';
+                ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - size / 2) + 'px';
+                ripple.style.top = (e.clientY - size / 2) + 'px';
+                document.body.appendChild(ripple);
+
+                // 波纹动画结束后移除
+                setTimeout(() => {
+                    if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+                }, 900);
+
+                // 跳转
+                setTimeout(() => {
+                    window.location.href = LANZOU_URL;
+                }, 200);
+            });
+
+            // ============================================================
+            // 3. 生成气泡 (丰富且精美)
+            // ============================================================
+            const bubbleContainer = document.getElementById('bubble-container');
+
+            function createBubble() {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+
+                // 随机大小: 8px ~ 35px
+                const size = 8 + Math.random() * 27;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+
+                // 随机水平位置
+                const left = 2 + Math.random() * 96;
+                bubble.style.left = left + '%';
+
+                // 随机垂直起始 (底部附近)
+                const bottom = 5 + Math.random() * 20;
+                bubble.style.bottom = bottom + '%';
+
+                // 随机动画时长 5s ~ 12s
+                const duration = 5 + Math.random() * 7;
+                bubble.style.setProperty('--duration', duration + 's');
+
+                // 随机延迟 0 ~ 8s
+                const delay = Math.random() * 8;
+                bubble.style.setProperty('--delay', delay + 's');
+
+                // 随机左右飘移幅度 (通过transform偏移)
+                const drift = (Math.random() - 0.5) * 40;
+                bubble.style.setProperty('--drift', drift + 'px');
+
+                // 额外自定义动画，让气泡左右摇摆
+                const swayDuration = 3 + Math.random() * 4;
+                bubble.style.animation =
+                    `bubbleRise ${duration}s ease-in ${delay}s infinite, bubbleSway ${swayDuration}s ease-in-out ${delay}s infinite alternate`;
+
+                bubbleContainer.appendChild(bubble);
+            }
+
+            // 添加气泡摇摆的关键帧 (动态注入)
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                        @keyframes bubbleSway {
+                            0% { transform: translateX(0px) rotate(0deg); }
+                            100% { transform: translateX(var(--drift, 10px)) rotate(8deg); }
+                        }
+                    `;
+            document.head.appendChild(styleSheet);
+
+            // 生成 15 ~ 22 个气泡
+            const bubbleCount = 15 + Math.floor(Math.random() * 8);
+            for (let i = 0; i < bubbleCount; i++) {
+                createBubble();
+            }
+
+            // 每隔 6~10 秒补充一个新气泡，保持灵动
+            setInterval(() => {
+                // 如果气泡数量太多则不再添加
+                if (bubbleContainer.children.length < 30) {
+                    createBubble();
+                }
+            }, 6000 + Math.random() * 4000);
+
+        })();
+    </script>
+
+</body>
+</html>
