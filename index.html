@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>标志展开</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                 "PingFang SC", "Helvetica Neue", sans-serif;
+    color: #111;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  /* =========================
+     开场 Logo 切片
+  ========================= */
+
+  .slice {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    pointer-events: none;
+    z-index: 9;
+    will-change: transform, opacity, filter;
+  }
+
+  .hero-image {
+    display: block;
+    width: min(60vw, 600px);
+    max-height: 60vh;
+    object-fit: contain;
+  }
+
+
+  /* =========================
+     2 + 2 + 2 网格
+  ========================= */
+
+  .grid {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    gap: 4vh;
+    padding: 6vh 6vw;
+
+    z-index: 5;
+  }
+
+  .grid-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    gap: 12vw;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: clamp(10px, 1.4vh, 18px);
+
+    width: clamp(180px, 26vw, 300px);
+  }
+
+
+  /* =========================
+     Logo
+  ========================= */
+
+  .logo-box {
+    width: clamp(90px, 13vh, 150px);
+    height: clamp(90px, 13vh, 150px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+
+    will-change: transform, opacity;
+  }
+
+  .logo-inner {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+
+    background: rgba(17,17,17,.04);
+
+    transition:
+      background .4s ease,
+      box-shadow .5s ease;
+  }
+
+  .logo-inner img {
+    width: 90%;
+    height: 90%;
+
+    object-fit: contain;
+  }
+
+  .item:hover .logo-inner {
+    background: rgba(17,17,17,.07);
+    box-shadow: 0 14px 44px rgba(0,0,0,.08);
+  }
+
+
+  /* =========================
+     项目文字
+  ========================= */
+
+  .item-text {
+    text-align: center;
+
+    opacity: 0;
+
+    will-change: transform, opacity;
+  }
+
+  .item-text h3 {
+    font-size: clamp(.92rem, 1.15vw, 1.05rem);
+    font-weight: 700;
+
+    color: #111;
+
+    margin-bottom: .35em;
+
+    letter-spacing: -.01em;
+  }
+
+  .item-text p {
+    font-size: clamp(.7rem, .85vw, .82rem);
+
+    line-height: 1.6;
+
+    color: #999;
+  }
+
+
+  /* =========================
+     手机
+  ========================= */
+
+  @media (max-width: 700px) {
+
+    .grid {
+      gap: 2vh;
+      padding: 4vh 4vw;
+    }
+
+    .grid-row {
+      gap: 5vw;
+    }
+
+    .item {
+      width: 42vw;
+    }
+
+    .logo-box {
+      width: 80px;
+      height: 80px;
+    }
+
+    .hero-image {
+      width: 80vw;
+      max-height: 50vh;
+    }
+
+  }
+
+</style>
+</head>
+
+
+<body>
+
+<div class="stage">
+
+
+  <!-- =========================
+       开场大 Logo
+       这张图片会被切成 6 块
+  ========================= -->
+
+  <div id="sliceLayer"></div>
+
+
+  <!-- =========================
+       六个项目
+       2 + 2 + 2
+  ========================= -->
+
+  <div class="grid">
+
+
+    <!-- 项目 1 -->
+
+    <div class="grid-row">
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo1.png">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目一</h3>
+
+          <p>这里是第一个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+
+      <!-- 项目 2 -->
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo2.png">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目二</h3>
+
+          <p>这里是第二个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         第二排
+    ========================= -->
+
+    <div class="grid-row">
+
+
+      <!-- 项目 3 -->
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo3.png">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目三</h3>
+
+          <p>这里是第三个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- 项目 4 -->
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo4.png">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目四</h3>
+
+          <p>这里是第四个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         第三排
+    ========================= -->
+
+    <div class="grid-row">
+
+
+      <!-- 项目 5 -->
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo5.png">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目五</h3>
+
+          <p>这里是第五个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- 项目 6 -->
+
+      <div class="item">
+
+        <div class="logo-box">
+
+          <div class="logo-inner">
+
+            <img src="images/logo6.jpg">
+
+          </div>
+
+        </div>
+
+
+        <div class="item-text">
+
+          <h3>项目六</h3>
+
+          <p>这里是第六个项目的简短介绍</p>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+
+<!-- GSAP -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+
+<script>
+
+(function(){
+
+  const stage = document.querySelector('.stage');
+
+  const sliceLayer = document.getElementById('sliceLayer');
+
+  const items = Array.from(
+    document.querySelectorAll('.item')
+  );
+
+
+  /*
+   * 一共有 6 个 Logo
+   * 所以开场大 Logo 会被切成 6 块
+   */
+
+  const SLICE_COUNT = items.length;
+
+
+  /*
+   * =========================
+   * 开场大 Logo
+   * =========================
+   *
+   * 你的第 6 张图片：
+   *
+   * images/hero.jpg
+   */
+
+  const heroHTML = `
+    <img
+      class="hero-image"
+      src="images/hero.jpg"
+    >
+  `;
+
+
+
+  /*
+   * =========================
+   * 创建 6 个切片
+   * =========================
+   */
+
+  const slices = [];
+
+
+  for(let i = 0; i < SLICE_COUNT; i++){
+
+    const s = document.createElement('div');
+
+    s.className = 'slice';
+
+
+    /*
+     * 从左到右切成 6 条
+     */
+
+    const leftPct =
+      (i / SLICE_COUNT) * 100;
+
+    const rightPct =
+      ((SLICE_COUNT - 1 - i) / SLICE_COUNT) * 100;
+
+
+    /*
+     * 防止切片之间出现白缝
+     */
+
+    const overlap = 0.06;
+
+
+    const l =
+      Math.max(0, leftPct - overlap);
+
+    const r =
+      Math.max(0, rightPct - overlap);
+
+
+    s.style.clipPath =
+      `inset(0% ${r}% 0% ${l}%)`;
+
+
+    /*
+     * 放入开场图片
+     */
+
+    s.innerHTML = heroHTML;
+
+
+    sliceLayer.appendChild(s);
+
+    slices.push(s);
+
+  }
+
+
+
+  let ctx = null;
+
+
+
+  /*
+   * =========================
+   * 计算每个切片飞向哪里
+   * =========================
+   */
+
+  function measure(){
+
+    const sr =
+      stage.getBoundingClientRect();
+
+
+    const cx =
+      sr.width / 2;
+
+    const cy =
+      sr.height / 2;
+
+
+    items.forEach((item, i) => {
+
+      const box =
+        item.querySelector('.logo-box');
+
+
+      const r =
+        box.getBoundingClientRect();
+
+
+      const lx =
+        r.left -
+        sr.left +
+        r.width / 2;
+
+
+      const ly =
+        r.top -
+        sr.top +
+        r.height / 2;
+
+
+      slices[i]._dx =
+        lx - cx;
+
+
+      slices[i]._dy =
+        ly - cy;
+
+    });
+
+  }
+
+
+
+  /*
+   * =========================
+   * 动画
+   * =========================
+   */
+
+  function build(){
+
+    ctx = gsap.context(() => {
+
+
+      const tl =
+        gsap.timeline({
+          defaults:{
+            ease:'power3.out'
+          }
+        });
+
+
+
+      /*
+       * 初始状态
+       */
+
+      gsap.set(slices, {
+
+        xPercent:-50,
+        yPercent:-50,
+
+        x:0,
+        y:0,
+
+        opacity:0,
+
+        scale:.88,
+
+        filter:'blur(24px)'
+
+      });
+
+
+      gsap.set(
+        '.logo-box',
+        {
+          opacity:0,
+          scale:.4
+        }
+      );
+
+
+      gsap.set(
+        '.item-text',
+        {
+          opacity:0,
+          y:16
+        }
+      );
+
+
+
+      /*
+       * =========================
+       * 第一阶段
+       *
+       * 大 Logo 出现
+       * =========================
+       */
+
+      tl.to(
+        slices,
+        {
+
+          opacity:1,
+
+          scale:1,
+
+          filter:'blur(0px)',
+
+          duration:.9,
+
+          ease:'power3.out'
+
+        },
+        0
+      );
+
+
+
+      /*
+       * 停留一下
+       */
+
+      tl.to(
+        {},
+        {
+          duration:.45
+        },
+        .9
+      );
+
+
+
+      /*
+       * =========================
+       * 第二阶段
+       *
+       * 6 个切片飞出去
+       * =========================
+       */
+
+      const flyT = 1.35;
+
+      const sliceStagger = .1;
+
+
+
+      slices.forEach((s,i)=>{
+
+        const t0 =
+          flyT +
+          i * sliceStagger;
+
+
+
+        /*
+         * 飞向自己的 Logo
+         */
+
+        tl.to(
+          s,
+          {
+
+            x:s._dx,
+
+            y:s._dy,
+
+            duration:1,
+
+            ease:'power3.inOut'
+
+          },
+          t0
+        );
+
+
+
+        /*
+         * 飞行后逐渐消失
+         */
+
+        tl.to(
+          s,
+          {
+
+            opacity:0,
+
+            scale:.5,
+
+            filter:'blur(10px)',
+
+            duration:.5,
+
+            ease:'power2.in'
+
+          },
+          t0 + .55
+        );
+
+      });
+
+
+
+      /*
+       * =========================
+       * 第三阶段
+       *
+       * 六个真正的 Logo 出现
+       * =========================
+       */
+
+      const logoStart =
+        flyT + .55;
+
+
+
+      items.forEach((item,i)=>{
+
+        const t0 =
+          logoStart +
+          i * .08;
+
+
+
+        /*
+         * Logo 出现
+         */
+
+        tl.to(
+          item.querySelector('.logo-box'),
+          {
+
+            opacity:1,
+
+            scale:1,
+
+            duration:.7,
+
+            ease:'power3.out'
+
+          },
+          t0
+        );
+
+
+
+        /*
+         * 文字出现
+         */
+
+        tl.to(
+          item.querySelector('.item-text'),
+          {
+
+            opacity:1,
+
+            y:0,
+
+            duration:.7,
+
+            ease:'power3.out'
+
+          },
+          t0 + .22
+        );
+
+      });
+
+
+    },stage);
+
+  }
+
+
+
+  /*
+   * =========================
+   * 初始化
+   * =========================
+   */
+
+  function init(){
+
+    if(ctx){
+
+      ctx.revert();
+
+    }
+
+
+    gsap.set(
+      [slices,'.logo-box','.item-text'],
+      {
+        clearProps:'all'
+      }
+    );
+
+
+    void stage.offsetHeight;
+
+
+    measure();
+
+    build();
+
+  }
+
+
+
+  /*
+   * 页面加载
+   */
+
+  if(
+    document.readyState === 'complete'
+  ){
+
+    init();
+
+  }else{
+
+    window.addEventListener(
+      'load',
+      init
+    );
+
+  }
+
+
+
+  /*
+   * 窗口大小改变
+   */
+
+  let t;
+
+
+  window.addEventListener(
+    'resize',
+    ()=>{
+
+      clearTimeout(t);
+
+      t = setTimeout(
+        init,
+        300
+      );
+
+    }
+  );
+
+
+})();
+
+</script>
+
+</body>
+</html>
