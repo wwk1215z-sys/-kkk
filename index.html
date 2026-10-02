@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>华猪集团</title>
+
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <filter id="whiteOnlyOutline" x="-20%" y="-20%" width="140%" height="140%">
+      <feColorMatrix in="SourceGraphic" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                10 10 10 -28 0" result="whiteMask"/>
+      <feMorphology in="whiteMask" operator="dilate" radius="0.35" result="dilated"/>
+      <feFlood flood-color="#000000" result="black"/>
+      <feComposite in="black" in2="dilated" operator="in" result="blackShape"/>
+      <feMerge>
+        <feMergeNode in="blackShape"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #111111;
+    --text-dim: #888888;
+    --hint: #cccccc;
+    --bg-overlay: #ffffff;
+    --btn-bg: #111111;
+    --btn-text: #ffffff;
+  }
+  body.dark {
+    --bg: #0a0a0a;
+    --text: #f5f5f5;
+    --text-dim: #a0a0a0;
+    --hint: #555555;
+    --bg-overlay: #0a0a0a;
+    --btn-bg: #f5f5f5;
+    --btn-text: #0a0a0a;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    width:100%; height:100%;
+    overflow:hidden;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display",
+                "PingFang SC", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior:none;
+    transition:background .5s ease, color .5s ease;
+  }
+
+  .stage {
+    position:relative;
+    width:100vw;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    background:var(--bg);
+    transition:background .5s ease;
+  }
+
+  .slice {
+    position:absolute;
+    left:50%; top:50%;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:9;
+    will-change:transform, opacity;
+  }
+  .slice img {
+    position:absolute;
+    top:0;
+    display:block;
+    max-width:none;
+    pointer-events:none;
+  }
+
+  .grid {
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    padding: 3vh 3vw;
+    z-index:5;
+  }
+
+  .grid-row {
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 6vw;
+  }
+
+  .item {
+    width: clamp(140px, 34vmin, 280px);
+    height: clamp(140px, 34vmin, 280px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    position:relative;
+    -webkit-user-select:none;
+    user-select:none;
+    touch-action:none;
+  }
+
+  .logo-box {
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    will-change:transform, opacity;
+  }
+
+  .logo-inner {
+    width:100%; height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .logo-inner img {
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+    transition:transform .6s cubic-bezier(.16,1,.3,1);
+    transform-origin:center center;
+    will-change:transform;
+  }
+
+  .item.active .logo-inner img {
+    transform:scale(1.15);
+  }
+
+  .overlay {
+    position:fixed;
+    inset:0;
+    z-index:100;
+    pointer-events:none;
+    visibility:hidden;
+  }
+  .overlay.active {
+    pointer-events:auto;
+    visibility:visible;
+  }
+
+  .overlay-bg {
+    position:absolute;
+    inset:0;
+    background:var(--bg-overlay);
+    opacity:0;
+    transition:background .5s ease;
+  }
+
+  .detail-img {
+    position:fixed;
+    object-fit:contain;
+    display:block;
+    will-change:left, top, width, height;
+    pointer-events:none;
+  }
+
+  .detail-panel {
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    top:58vh;
+    width:min(90vw, 720px);
+    text-align:center;
+    opacity:0;
+    will-change:transform, opacity;
+    pointer-events:none;
+  }
+
+  .detail-panel h2 {
+    font-size:clamp(1.2rem, 4.5vw, 2rem);
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:.7em;
+    letter-spacing:-.01em;
+  }
+
+  .detail-panel p {
+    font-size:clamp(.82rem, 3.5vw, 1rem);
+    line-height:1.9;
+    color:var(--text-dim);
+    min-height:5em;
+  }
+
+  .hl-blue   { color: #2563eb; font-weight:600; }
+  .hl-yellow { color: #d97706; font-weight:600; }
+  .hl-red    { color: #dc2626; font-weight:600; }
+  .hl-green  { color: #16a34a; font-weight:600; }
+  .hl-purple { color: #7c3aed; font-weight:600; }
+
+  body.dark .hl-blue   { color: #60a5fa; }
+  body.dark .hl-yellow { color: #fbbf24; }
+  body.dark .hl-red    { color: #f87171; }
+  body.dark .hl-green  { color: #4ade80; }
+  body.dark .hl-purple { color: #a78bfa; }
+
+  .close-hint {
+    position:fixed;
+    bottom:3vh;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:.72rem;
+    color:var(--hint);
+    letter-spacing:.25em;
+    z-index:101;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s ease;
+    white-space:nowrap;
+  }
+  .overlay.active ~ .close-hint { opacity:1; }
+
+  .theme-btn {
+    position:fixed;
+    bottom:5vh;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    padding: 13px 30px;
+    border-radius:999px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    font-size:.85rem;
+    letter-spacing:.15em;
+    z-index:200;
+    opacity:0;
+    pointer-events:none;
+    cursor:pointer;
+    user-select:none;
+    transition: opacity .3s ease,
+                transform .5s cubic-bezier(.16,1,.3,1),
+                background .5s ease,
+                color .5s ease;
+    white-space:nowrap;
+    font-weight:600;
+  }
+  .theme-btn.show {
+    opacity:1;
+    pointer-events:auto;
+    transform:translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <img id="heroSource" src="retouch_2026100221285681.png"
+       alt="" style="position:absolute;visibility:hidden;pointer-events:none;">
+
+  <div id="sliceLayer"></div>
+
+  <div class="grid">
+
+    <div class="grid-row">
+      <div class="item" data-title="文凯水族">
+        <div class="item-content" style="display:none">
+          文凯水族成立已达<span class="hl-blue">7年</span>，拥有丰富成熟的<span class="hl-blue">中国原生鱼经验</span>，深耕养鱼，主营<span class="hl-blue">鱼缸全套开缸业务</span>，并设有官方<span class="hl-blue">APP和官网</span>。文凯水族也在不断为自然生态做出努力，保护好<span class="hl-blue">中国水下自然生态</span>，才能源源不断地获得观赏鱼资源。
+        </div>
+        <div class="logo-box">
+          <div class="logo-inner">
+            <img src="retouch_2026100220405881.png" alt="文凯水族">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-row">
+      <div class="item" data-outline="light" data-title="华猪计划">
+        <div class="item-content" style="display:none">
+          华猪计划，隶属于<span class="hl-purple">文凯集团</span>旗下的<span class="hl-purple">计划项目</span>，其中的任何项目你都可以在此页面中找到。
+        </div>
+        <div class="logo-box">
+          <div class="logo-inner">
+            <img src="mmexport1790943653817.jpg" alt="华猪计划">
+          </div>
+        </div>
+      </div>
+
+      <div class="item" data-outline="light-white" data-title="华猪摄影">
+        <div class="item-content" style="display:none">
+          华猪摄影成立达<span class="hl-yellow">两年</span>，始终坚持<span class="hl-yellow">手机摄影</span>和<span class="hl-yellow">相机摄影</span>路线，无论是<span class="hl-yellow">风光</span>、<span class="hl-yellow">人像</span>还是<span class="hl-yellow">极简风格</span>，我们都可以为您提供<span class="hl-yellow">专业的指导</span>。无论你是手机还是相机，都可以享受摄影的乐趣。
+        </div>
+        <div class="logo-box">
+          <div class="logo-inner">
+            <img src="mmexport1790943655712.jpg" alt="华猪摄影">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-row">
+      <div class="item" data-outline="dark" data-title="华猪救援">
+        <div class="item-content" style="display:none">
+          华猪救援，作为<span class="hl-red">民间公益救援组织</span>，<span class="hl-red">完全免费</span>，主要以<span class="hl-red">公路交通事故救援</span>为主，目前仍处于<span class="hl-red">计划阶段</span>，需要你的加入。
+        </div>
+        <div class="logo-box">
+          <div class="logo-inner">
+            <img src="retouch_2026100220223400.png" alt="华猪救援">
+          </div>
+        </div>
+      </div>
+
+      <div class="item" data-outline="dark" data-title="华猪摩托">
+        <div class="item-content" style="display:none">
+          华猪摩托，主要经营<span class="hl-green">电动自行车</span>、<span class="hl-green">电动摩托车</span><span class="hl-green">合法改装</span>项目，目前正处于<span class="hl-green">试验阶段</span>，不久的将来就会正式上线。
+        </div>
+        <div class="logo-box">
+          <div class="logo-inner">
+            <img src="retouch_2026100220394892.png" alt="华猪摩托">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-bg" id="overlayBg"></div>
+  <img class="detail-img" id="detailImg" alt="">
+  <div class="detail-panel" id="detailPanel">
+    <h2 id="detailTitle"></h2>
+    <p id="detailText"></p>
+  </div>
+</div>
+<div class="close-hint" id="closeHint">点击任意处关闭 · 左右滑动切换</div>
+
+<div class="theme-btn" id="themeBtn">切换深色</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function(){
+  const stage      = document.querySelector('.stage');
+  const sliceLayer = document.getElementById('sliceLayer');
+  const items      = Array.from(document.querySelectorAll('.item'));
+  const heroSrc    = document.getElementById('heroSource');
+
+  const overlay     = document.getElementById('overlay');
+  const overlayBg   = document.getElementById('overlayBg');
+  const detailImg   = document.getElementById('detailImg');
+  const detailPanel = document.getElementById('detailPanel');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailText  = document.getElementById('detailText');
+  const themeBtn    = document.getElementById('themeBtn');
+
+  /* ============ 描边字符串 ============ */
+  const BLACK_OUTLINE =
+    'drop-shadow( 0.35px  0.05px 0 #000) ' +
+    'drop-shadow(-0.25px  0.15px 0 #000) ' +
+    'drop-shadow( 0.10px -0.35px 0 #000) ' +
+    'drop-shadow(-0.30px -0.10px 0 #000)';
+
+  const WHITE_OUTLINE =
+    'drop-shadow( 0.35px  0.05px 0 #fff) ' +
+    'drop-shadow(-0.25px  0.15px 0 #fff) ' +
+    'drop-shadow( 0.10px -0.35px 0 #fff) ' +
+    'drop-shadow(-0.30px -0.10px 0 #fff)';
+
+  function filterFor(type, isDark) {
+    if (!isDark) {
+      if (type === 'light')       return BLACK_OUTLINE;
+      if (type === 'light-white') return 'url(#whiteOnlyOutline)';
+      return 'none';
+    } else {
+      if (type === 'dark')        return WHITE_OUTLINE;
+      return 'none';
+    }
+  }
+
+  function applyOutlines() {
+    const isDark = document.body.classList.contains('dark');
+    items.forEach(item => {
+      const type = item.dataset.outline || 'none';
+      const img = item.querySelector('.logo-inner img');
+      img.style.filter = filterFor(type, isDark);
+    });
+  }
+
+  /* ============ 真·切开（带 1px 重叠防亚像素缝隙） ============ */
+  const SLICE_COUNT = items.length;
+  const slices = [];
+  let measured = false;
+
+  function buildSlices() {
+    sliceLayer.innerHTML = '';
+    slices.length = 0;
+
+    const iw = heroSrc.naturalWidth;
+    const ih = heroSrc.naturalHeight;
+    if (!iw || !ih) return;
+
+    const maxW = Math.min(window.innerWidth  * 0.60, iw);
+    const maxH = Math.min(window.innerHeight * 0.45, ih);
+    const ratio = Math.min(maxW / iw, maxH / ih);
+    const W = iw * ratio;
+    const H = ih * ratio;
+    const sliceW = W / SLICE_COUNT;
+    const overlap = 1;   // 1px 重叠，防止缝隙
+
+    for (let i = 0; i < SLICE_COUNT; i++) {
+      const s = document.createElement('div');
+      s.className = 'slice';
+      s.style.width  = (sliceW + overlap) + 'px';
+      s.style.height = H + 'px';
+
+      const img = document.createElement('img');
+      img.src = heroSrc.src;
+      img.style.width  = W + 'px';
+      img.style.height = H + 'px';
+      img.style.left   = (-i * sliceW) + 'px';
+
+      s.appendChild(img);
+      sliceLayer.appendChild(s);
+      slices.push(s);
+    }
+    measured = true;
+  }
+
+  function measureTargets() {
+    const sr = stage.getBoundingClientRect();
+    const cx = sr.width  / 2;
+    const cy = sr.height / 2;
+    const firstSliceW = slices[0].getBoundingClientRect().width - 1;
+
+    items.forEach((item, i) => {
+      const box = item.querySelector('.logo-box');
+      const r   = box.getBoundingClientRect();
+      const lx  = r.left - sr.left + r.width  / 2;
+      const ly  = r.top  - sr.top  + r.height / 2;
+      slices[i]._targetX = lx - cx;
+      slices[i]._targetY = ly - cy;
+      slices[i]._startX  = (i - (SLICE_COUNT - 1) / 2) * firstSliceW;
+      slices[i]._startY  = 0;
+    });
+  }
+
+  let ctx = null;
+
+  function build() {
+    ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+
+      /* ---------- 初始：5 片拼合，无缩放 ---------- */
+      slices.forEach(s => {
+        gsap.set(s, {
+          xPercent: -50, yPercent: -50,
+          x: s._startX, y: s._startY,
+          opacity: 0, scale: 1, rotate: 0
+        });
+      });
+      gsap.set('.logo-box', { opacity: 0, scale: 0.6 });
+
+      /* ---------- 阶段 1：整张图淡入（无缩放，无模糊） ---------- */
+      tl.to(slices, {
+        opacity: 1,
+        duration: 0.9, ease: 'power2.out'
+      }, 0);
+
+      /* 停留 0.55s */
+      tl.to({}, { duration: 0.55 }, 0.9);
+
+      /* ---------- 阶段 2：切开瞬间（每片轻微上下错位） ---------- */
+      const cutT = 1.45;
+      const cutStagger = 0.04;
+      slices.forEach((s, i) => {
+        const dir = i % 2 === 0 ? -1 : 1;
+        tl.to(s, {
+          y: dir * 3.5,
+          duration: 0.2, ease: 'power2.out'
+        }, cutT + i * cutStagger);
+      });
+
+      /* ---------- 阶段 3：5 片同时出发、同时到达 ---------- */
+      const flyT = 1.9;
+      const flyDur = 1.0;
+
+      slices.forEach((s, i) => {
+        tl.to(s, {
+          x: s._targetX,
+          y: s._targetY,
+          rotate: (i % 2 === 0 ? -0.5 : 0.5),
+          duration: flyDur, ease: 'expo.out'
+        }, flyT);
+      });
+
+      /* ---------- 阶段 4：到达时，碎片直接"变成"图标 ----------
+         碎片缩回中心 + 淡出，同时图标在原位放大淡入，
+         两者重叠，视觉上就是一个"变化"，不是"消失后再生"。 */
+      const arriveT = flyT + flyDur;
+
+      slices.forEach((s, i) => {
+        tl.to(s, {
+          scale: 0.55,
+          rotate: 0,
+          opacity: 0,
+          duration: 0.5, ease: 'power2.inOut'
+        }, arriveT);
+      });
+
+      items.forEach((item, i) => {
+        const box = item.querySelector('.logo-box');
+        tl.fromTo(box,
+          { opacity: 0, scale: 0.55 },
+          {
+            opacity: 1, scale: 1,
+            duration: 0.55, ease: 'expo.out'
+          },
+          arriveT
+        );
+      });
+    }, stage);
+  }
+
+  function init() {
+    if (ctx) ctx.revert();
+    buildSlices();
+    if (!measured) return;
+    void stage.offsetHeight;
+    applyOutlines();
+    measureTargets();
+    build();
+  }
+
+  if (heroSrc.complete && heroSrc.naturalWidth) init();
+  else heroSrc.addEventListener('load', init);
+
+  let rt;
+  window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(init, 300);
+  });
+
+  /* ================================================
+     交互
+     ================================================ */
+  let activeItem = null;
+  let pressInfo  = null;
+
+  function setActive(item) {
+    if (activeItem === item) return;
+    if (activeItem) activeItem.classList.remove('active');
+    activeItem = item;
+    if (activeItem) activeItem.classList.add('active');
+  }
+  function clearActive() { setActive(null); }
+
+  function onMove(x, y) {
+    if (!pressInfo) return;
+    const dx = x - pressInfo.startX;
+    const dy = y - pressInfo.startY;
+    if (dx * dx + dy * dy > 100) pressInfo.moved = true;
+
+    const under = document.elementFromPoint(x, y);
+    const overItem = under && under.closest('.item');
+
+    if (overItem && overItem !== pressInfo.item) {
+      pressInfo.item = overItem;
+      setActive(overItem);
+    } else if (!overItem) {
+      clearActive();
+    }
+  }
+
+  function onUp(x, y) {
+    if (!pressInfo) return;
+    const dt = Date.now() - pressInfo.time;
+    const under = document.elementFromPoint(x, y);
+    const overItem = under && under.closest('.item');
+    const info = pressInfo;
+    pressInfo = null;
+
+    if (!info.moved && dt < 300 && overItem === info.item) {
+      clearActive();
+      openDetail(overItem);
+    } else {
+      clearActive();
+    }
+  }
+
+  items.forEach(item => {
+    item.addEventListener('mouseenter', e => {
+      if (e.pointerType === 'mouse' || !e.pointerType) setActive(item);
+    });
+    item.addEventListener('mouseleave', e => {
+      if (e.pointerType === 'mouse' || !e.pointerType) clearActive();
+    });
+
+    item.addEventListener('pointerdown', e => {
+      if (isOpen) return;
+      pressInfo = {
+        startX: e.clientX, startY: e.clientY,
+        time: Date.now(), moved: false, item: item
+      };
+      setActive(item);
+    });
+  });
+
+  window.addEventListener('pointermove', e => onMove(e.clientX, e.clientY));
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) onMove(t.clientX, t.clientY);
+  }, { passive: true });
+
+  window.addEventListener('pointerup', e => onUp(e.clientX, e.clientY));
+  window.addEventListener('touchend', e => {
+    const t = e.changedTouches[0];
+    if (t) onUp(t.clientX, t.clientY);
+  });
+
+  /* ================================================
+     详情
+     ================================================ */
+  let isOpen = false;
+  let openedAt = 0;
+  let savedFirst = null;
+  let currentIndex = 0;
+
+  function fillDetail(item) {
+    const srcImg = item.querySelector('.logo-inner img');
+    detailImg.src = srcImg.src;
+
+    const type = item.dataset.outline || 'none';
+    const isDark = document.body.classList.contains('dark');
+    detailImg.style.filter = filterFor(type, isDark);
+
+    detailTitle.textContent = item.dataset.title || '';
+    detailText.innerHTML = item.querySelector('.item-content').innerHTML;
+
+    const r = srcImg.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: r.width, height: r.height };
+  }
+
+  function computeTarget(first) {
+    const maxDim = Math.min(window.innerWidth * 0.60,
+                            window.innerHeight * 0.42, 420);
+    const ratio = first.width / first.height;
+    let lastW, lastH;
+    if (ratio > 1) { lastW = maxDim; lastH = maxDim / ratio; }
+    else           { lastH = maxDim; lastW = maxDim * ratio; }
+    return {
+      left: (window.innerWidth - lastW) / 2,
+      top:  window.innerHeight * 0.12,
+      width: lastW,
+      height: lastH
+    };
+  }
+
+  function openDetail(item) {
+    if (isOpen) return;
+    isOpen = true;
+    openedAt = Date.now();
+    currentIndex = items.indexOf(item);
+
+    const first = fillDetail(item);
+    savedFirst = first;
+    const tgt = computeTarget(first);
+
+    gsap.set(detailImg, {
+      left: first.left, top: first.top,
+      width: first.width, height: first.height
+    });
+    gsap.set(overlayBg,   { opacity: 0 });
+    gsap.set(detailPanel, { opacity: 0, y: 30 });
+
+    overlay.classList.add('active');
+
+    const tl = gsap.timeline();
+    tl.to(overlayBg, { opacity: 1, duration: 0.45, ease: 'power2.out' }, 0);
+    tl.to(detailImg, {
+      left: tgt.left, top: tgt.top,
+      width: tgt.width, height: tgt.height,
+      duration: 0.8, ease: 'expo.out'
+    }, 0);
+    tl.to(detailImg, {
+      top: tgt.top - 25,
+      duration: 0.5, ease: 'power2.out'
+    }, 0.55);
+    tl.to(detailPanel, {
+      opacity: 1, y: 0,
+      duration: 0.6, ease: 'expo.out'
+    }, 0.75);
+  }
+
+  function closeDetail() {
+    if (!isOpen || !savedFirst) return;
+    isOpen = false;
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        overlay.classList.remove('active');
+        gsap.set(detailImg, { clearProps: 'left,top,width,height' });
+        detailImg.removeAttribute('src');
+        detailImg.style.filter = '';
+        savedFirst = null;
+      }
+    });
+
+    tl.to(detailPanel, {
+      opacity: 0, y: 15,
+      duration: 0.25, ease: 'power2.in'
+    }, 0);
+    tl.to(detailImg, {
+      left: savedFirst.left, top: savedFirst.top,
+      width: savedFirst.width, height: savedFirst.height,
+      duration: 0.75, ease: 'expo.inOut'
+    }, 0.1);
+    tl.to(overlayBg, {
+      opacity: 0,
+      duration: 0.75, ease: 'power2.inOut'
+    }, 0.1);
+  }
+
+  function switchDetail(dir) {
+    if (!isOpen) return;
+    const newIndex = (currentIndex + dir + items.length) % items.length;
+    currentIndex = newIndex;
+    const newItem = items[newIndex];
+
+    const first = fillDetail(newItem);
+    savedFirst = first;
+    const tgt = computeTarget(first);
+    const finalTop = tgt.top - 25;
+
+    const dirX = dir > 0 ? 40 : -40;
+    gsap.fromTo(detailImg,
+      { left: tgt.left + dirX, top: finalTop, width: tgt.width, height: tgt.height, opacity: 0 },
+      { left: tgt.left, top: finalTop, width: tgt.width, height: tgt.height, opacity: 1,
+        duration: 0.5, ease: 'expo.out' }
+    );
+    gsap.fromTo(detailPanel,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out', delay: 0.1 }
+    );
+  }
+
+  let tStartX = 0, tStartY = 0;
+  overlay.addEventListener('touchstart', e => {
+    tStartX = e.touches[0].clientX;
+    tStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  overlay.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tStartX;
+    const dy = e.changedTouches[0].clientY - tStartY;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) {
+      if (Date.now() - openedAt < 300) return;
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) closeDetail();
+      return;
+    }
+    switchDetail(dx < 0 ? 1 : -1);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!isOpen) return;
+    if (e.key === 'ArrowRight') switchDetail(1);
+    else if (e.key === 'ArrowLeft') switchDetail(-1);
+    else if (e.key === 'Escape') closeDetail();
+  });
+
+  overlay.addEventListener('click', () => {
+    if (Date.now() - openedAt < 300) return;
+    if ('ontouchstart' in window) return;
+    closeDetail();
+  });
+
+  /* ================================================
+     深色模式
+     ================================================ */
+  const LONG_PRESS_MS = 2000;
+  const CENTER_ZONE = 0.25;
+  let longPressTimer = null;
+  let btnHideTimer = null;
+
+  function inCenter(x, y) {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    return x > w * CENTER_ZONE && x < w * (1 - CENTER_ZONE)
+        && y > h * CENTER_ZONE && y < h * (1 - CENTER_ZONE);
+  }
+
+  document.addEventListener('pointerdown', e => {
+    if (isOpen) return;
+    if (!inCenter(e.clientX, e.clientY)) return;
+    clearTimeout(longPressTimer);
+    longPressTimer = setTimeout(() => {
+      longPressTimer = null;
+      showThemeBtn();
+    }, LONG_PRESS_MS);
+  });
+
+  function cancelLongPress() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
+
+  document.addEventListener('pointerup', cancelLongPress);
+  document.addEventListener('pointercancel', cancelLongPress);
+  document.addEventListener('pointermove', e => {
+    if (!longPressTimer) return;
+    if (!inCenter(e.clientX, e.clientY)) cancelLongPress();
+  });
+
+  function showThemeBtn() {
+    const isDark = document.body.classList.contains('dark');
+    themeBtn.textContent = isDark ? '切换浅色' : '切换深色';
+    themeBtn.classList.add('show');
+    clearTimeout(btnHideTimer);
+    btnHideTimer = setTimeout(() => {
+      themeBtn.classList.remove('show');
+    }, 3500);
+  }
+
+  themeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    document.body.classList.toggle('dark');
+    applyOutlines();
+
+    if (isOpen && currentIndex >= 0) {
+      const item = items[currentIndex];
+      const type = item.dataset.outline || 'none';
+      const isDark = document.body.classList.contains('dark');
+      detailImg.style.filter = filterFor(type, isDark);
+    }
+
+    clearTimeout(btnHideTimer);
+    themeBtn.classList.remove('show');
+  });
+})();
+</script>
+</body>
+</html>
